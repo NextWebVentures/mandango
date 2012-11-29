@@ -11,9 +11,15 @@
             "email": "pablodip@gmail.com"
         }
     ],
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/zergin/mondator"
+        }
+    ],
     "require": {
         "php":               ">=5.3.0",
-        "zergin/mondator": "dev-master"
+	"zergin/mondator": "dev-master"
     },
     "autoload": {
         "psr-0": { "Mandango\\": "src/" }

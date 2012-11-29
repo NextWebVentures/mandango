@@ -33,7 +33,7 @@ class BinDataTypeTest extends TestCase
         $type = new BinDataType();
         $function = $this->getTypeFunction($type->toMongoInString());
 
-        $this->assertEquals(new \MongoBinData('123', 2), $function('123', 2));
+        $this->assertEquals(new \MongoBinData('123', 2), $function('123'));
         $this->assertEquals(new \MongoBinData(file_get_contents(__FILE__), 2), $function(__FILE__));
     }
 

@@ -1,6 +1,6 @@
 # Mandango
 
-[![Build Status](https://secure.travis-ci.org/mandango/mandango.png)](http://travis-ci.org/mandango/mandango)
+[![Build Status](https://secure.travis-ci.org/zergin/mandango.png)](http://travis-ci.org/zergin/mandango)
 
 Mandango is a simple, powerful and ultrafast Object Document Mapper (ODM) for PHP and MongoDB.
 

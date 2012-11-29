@@ -29,7 +29,7 @@ class BinDataType extends Type
             $value = file_get_contents($value);
         }
 
-        return new \MongoBinData($value);
+        return new \MongoBinData($value, 2);
     }
 
     /**

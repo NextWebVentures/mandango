@@ -22,14 +22,14 @@ class MetadataFactoryCollection extends MetadataFactory
      * Map of class to conctere provider (factory)
      * @var array
      */
-    protected $map = [];
+    protected $map = array();
 
     /**
      * Aggregate map of class types (standalone document/embedded) from all
      * added factories; allows for direct acces and almost no overloading.
      * @var array
      */
-    protected $classes = [];
+    protected $classes = array();
 
     /**
      * Class constructor

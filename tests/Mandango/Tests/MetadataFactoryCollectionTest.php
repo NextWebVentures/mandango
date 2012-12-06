@@ -60,10 +60,10 @@ class MetadataFactoryCollectionTest extends \PHPUnit_Framework_TestCase
 {
     public function setUp()
     {
-        $this->metadataFactory = new MetadataFactoryCollection([
+        $this->metadataFactory = new MetadataFactoryCollection(array(
             new MetadataFactoryOne(),
             new MetadataFactoryTwo(),
-        ]);
+        ));
     }
 
     public function testMandangoUsage()

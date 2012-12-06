@@ -1,5 +1,5 @@
 {
-    "name": "zergin/mandango",
+    "name": "NextWebVentures/mandango",
     "type": "library",
     "description": "Simple, poweful and ultrafast Object Document Mapper (ODM) for PHP and MongoDB",
     "keywords": ["odm", "mongodb"],
@@ -14,12 +14,12 @@
     "repositories": [
         {
             "type": "vcs",
-            "url": "https://github.com/zergin/mondator"
+            "url": "https://github.com/NextWebVentures/mondator"
         }
     ],
     "require": {
-        "php":               ">=5.3.0",
-	"zergin/mondator": "dev-master"
+        "php"           : ">=5.3.0",
+        "NextWebVentures/mondator": "dev-master"
     },
     "autoload": {
         "psr-0": { "Mandango\\": "src/" }

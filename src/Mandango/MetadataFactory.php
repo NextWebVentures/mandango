@@ -38,6 +38,15 @@ abstract class MetadataFactory
     }
 
     /**
+     * Return raw classes -> type array for internal use in inheriting classes
+     * @return array Is class embedded mapping
+     */
+    protected function getClassesTypes() 
+    {
+        return $this->classes;
+    }
+
+    /**
      * Returns the classes of documents (not embeddeds).
      *
      * @return array The classes of documents.

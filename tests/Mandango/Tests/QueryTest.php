@@ -91,6 +91,16 @@ class QueryTest extends TestCase
         $this->assertSame($fields, $query->getFields());
     }
 
+    public function testExtra()
+    {
+        $query = $this->query;
+        $this->assertSame(array(), $query->getExtra());
+
+        $extra = array('extra1' => 1, 'extra2' => 1);
+        $this->assertSame($query, $query->extra($extra));
+        $this->assertSame($extra, $query->getExtra());
+    }
+
     public function testReferences()
     {
         $query = $this->query;

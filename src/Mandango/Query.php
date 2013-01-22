@@ -36,7 +36,7 @@ abstract class Query implements \Countable, \IteratorAggregate
     private $slaveOkay;
     private $snapshot;
     private $timeout;
-    private $extra;
+    private $extra = array();
 
     /**
      * Constructor.
@@ -215,7 +215,7 @@ abstract class Query implements \Countable, \IteratorAggregate
      *
      * @api
      */
-    public function extra($extra)
+    public function extra(array $extra)
     {
         $this->extra = $extra;
 

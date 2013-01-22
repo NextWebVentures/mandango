@@ -10,6 +10,7 @@
      */
     public function setExtraData($data)
     {
+
 {# inheritance #}
 {% if config_class.inheritance and 'single' == config_class.inheritance.type %}
         parent::setExtraData($data);
@@ -32,12 +33,12 @@
         };
 
         // add extra data
-        $this->data['extra'] = $merger($data, $data['_extra']);
+        $this->extra = $merger($data, $data['_extra']);
 
         return $this;
     }
 
     public function getExtraData()
     {
-        return $this->data['extra'];
+        return $this->extra;
     }

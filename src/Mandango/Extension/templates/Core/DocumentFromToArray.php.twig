@@ -100,5 +100,5 @@
 {% endif %}
 {% endfor %}
 
-        return $array;
+        return array_merge($array, $this->getExtraData());
     }

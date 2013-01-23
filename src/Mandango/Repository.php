@@ -224,7 +224,7 @@ abstract class Repository
      *
      * @api
      */
-    public function findById(array $ids)
+    public function findById(array $ids, array $extra = array())
     {
         $ids = $this->idsToMongo($ids);
 
@@ -239,7 +239,10 @@ abstract class Repository
             return $documents;
         }
 
-        return $this->createQuery(array('_id' => array('$in' => $ids)))->all();
+        return $this
+            ->createQuery(array('_id' => array('$in' => $ids)))
+            ->extra($extra)
+            ->all();
     }
 
     /**
@@ -251,7 +254,7 @@ abstract class Repository
      *
      * @api
      */
-    public function findOneById($id)
+    public function findOneById($id, array $extra = array())
     {
         $id = $this->idToMongo($id);
 
@@ -259,7 +262,10 @@ abstract class Repository
             return $this->identityMap->get($id);
         }
 
-        return $this->createQuery(array('_id' => $id))->one();
+        return $this
+            ->createQuery(array('_id' => $id))
+            ->extra($extra)
+            ->one();
     }
 
     /**

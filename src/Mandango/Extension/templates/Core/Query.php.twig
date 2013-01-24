@@ -83,7 +83,7 @@
 
         if ($references = $this->getReferences()) {
             $mandango = $this->getRepository()->getMandango();
-            $metadata = $mandango->getMetadataFactory()->getClass($this->getRepository()->getDocumentClass());
+            $metadata = $mandango->getMetadataFactory()->getClass($documentClass);
             foreach ($references as $referenceName) {
                 // one
                 if (isset($metadata['referencesOne'][$referenceName])) {

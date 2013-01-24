@@ -21,29 +21,21 @@
         }
 {% endif %}
 
-        $fieldsMapper = function ($fieldList) {
-            $fields = array();
-
-            foreach ($fieldList as $field) {
-                if (false === strpos($field, '.')) {
-                    $fields[$field] = 1;
-                    continue;
-                }
-                $f =& $fields;
-                foreach (explode('.', $field) as $name) {
-                    if (!isset($f[$name])) {
-                        $f[$name] = array();
-                    }
-                    $f =& $f[$name];
-                }
-                $f = 1;
+        $fields = array();
+        foreach (array_keys($this->getFields()) as $field) {
+            if (false === strpos($field, '.')) {
+                $fields[$field] = 1;
+                continue;
             }
-
-            return $fields;
-        };
-
-        $fields = $fieldsMapper(array_keys($this->getFields()));
-        $extra = $fieldsMapper(array_keys($this->getExtra()));
+            $f =& $fields;
+            foreach (explode('.', $field) as $name) {
+                if (!isset($f[$name])) {
+                    $f[$name] = array();
+                }
+                $f =& $f[$name];
+            }
+            $f = 1;
+        }
 
         $documents = array();
         foreach ($this->createCursor() as $id => $data) {
@@ -80,11 +72,9 @@
                 }
                 $data['_query_hash'] = $this->getHash();
                 $data['_fields'] = $fields;
-                $data['_extra'] = $extra;
 
                 $document = new $documentClass($mandango);
                 $document->setDocumentData($data);
-                $document->setExtraData($data);
 
                 $identityMap[$id] = $document;
             }

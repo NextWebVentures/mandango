@@ -30,7 +30,7 @@
      *
      * @return {{ referenceOne.class }}|null The reference or null if it does not exist.
      */
-    public function get{{ name|ucfirst }}(array $extra = array())
+    public function get{{ name|ucfirst }}()
     {
         if (!isset($this->data['referencesOne']['{{ name }}'])) {
 {% if not config_class.isEmbedded %}
@@ -41,11 +41,7 @@
             if (!$id = $this->get{{ referenceOne.field|ucfirst }}()) {
                 return null;
             }
-            $document = $this->getMandango()
-                ->getRepository('{{ referenceOne.class }}')
-                ->findOneById($id, $extra);
-
-            if (!$document) {
+            if (!$document = $this->getMandango()->getRepository('{{ referenceOne.class }}')->findOneById($id)) {
                 throw new \RuntimeException('The reference "{{ name }}" does not exist.');
             }
             $this->data['referencesOne']['{{ name }}'] = $document;

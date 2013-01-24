@@ -36,7 +36,6 @@ abstract class Query implements \Countable, \IteratorAggregate
     private $slaveOkay;
     private $snapshot;
     private $timeout;
-    private $extra = array();
 
     /**
      * Constructor.
@@ -204,34 +203,6 @@ abstract class Query implements \Countable, \IteratorAggregate
     public function getFields()
     {
         return $this->fields;
-    }
-
-    /**
-     * Set the fields field names.
-     *
-     * @param array $fields The fields.
-     *
-     * @return Mandango\Query The query instance (fluent interface).
-     *
-     * @api
-     */
-    public function extra(array $extra)
-    {
-        $this->extra = $extra;
-
-        return $this;
-    }
-
-    /**
-     * Returns the extra field names.
-     *
-     * @return array The extra.
-     *
-     * @api
-     */
-    public function getExtra()
-    {
-        return $this->extra;
     }
 
     /**
@@ -596,7 +567,7 @@ abstract class Query implements \Countable, \IteratorAggregate
      */
     public function createCursor()
     {
-        $cursor = $this->repository->getCollection()->find($this->criteria, array_merge($this->fields, $this->extra));
+        $cursor = $this->repository->getCollection()->find($this->criteria, $this->fields);
 
         if (null !== $this->sort) {
             $cursor->sort($this->sort);

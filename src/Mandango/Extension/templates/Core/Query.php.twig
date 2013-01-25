@@ -37,6 +37,14 @@
             $f = 1;
         }
 
+        $excludeFields = [];
+{% for name, field in config_class.fields %}
+{% if field.lazy is defined and field.lazy %}
+        $excludeFields['{{ name }}'] = 0;
+{% endif %}
+{% endfor %}
+        $this->fields(array_merge($excludeFields, $this->getFields()));
+
         $documents = array();
         foreach ($this->createCursor() as $id => $data) {
 {% if config_class.inheritable and 'single' == config_class.inheritable.type %}

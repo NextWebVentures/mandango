@@ -43,6 +43,14 @@
 {# fields #}
 {% for name, field in config_class.fields %}
         if (isset($data['{{ field.dbName }}'])) {
+{% if config_class.isEmbedded %}
+            if (($rap = $this->getRootAndPath()) && !$this->isEmbeddedManyNew()) {
+                $field = $rap['path'].'.{{ field.dbName }}';
+                $rap['root']->addFieldCache($field);
+            }
+{% else %}
+            $this->addFieldCache('{{ field.dbName }}');
+{% endif %}
             {{ mandango_type_to_php(field.type, "$data['" ~ field.dbName ~ "']", "$this->data['fields']['" ~ name ~ "']") }}
         } elseif (isset($data['_fields']['{{ field.dbName }}'])) {
             $this->data['fields']['{{ name }}'] = null;

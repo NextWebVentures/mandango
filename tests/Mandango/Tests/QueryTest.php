@@ -80,7 +80,7 @@ class QueryTest extends TestCase
     public function testFields()
     {
         $query = $this->query;
-        $this->assertSame(array('_id' => 1), $query->getFields());
+        $this->assertSame(array(), $query->getFields());
 
         $fields = array('title' => 1, 'content' => 1);
         $this->assertSame($query, $query->fields($fields));

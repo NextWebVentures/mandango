@@ -95,7 +95,12 @@ class TestCase extends \PHPUnit_Framework_TestCase
     {
         $articles = array();
         foreach ($this->createArticlesRaw($nb) as $articleRaw) {
-            $article = $this->mandango->create('Model\Article')->setId($articleRaw['_id'])->setIsNew(false);
+            $article = $this->mandango->create('Model\Article')
+                ->setId($articleRaw['_id'])
+                ->setIsNew(false);
+
+            $article->setDocumentData($articleRaw);
+
             if ($idAsKey) {
                 $articles[$article->getId()->__toString()] = $article;
             } else {

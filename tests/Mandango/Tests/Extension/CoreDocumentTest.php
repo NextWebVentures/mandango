@@ -81,9 +81,9 @@ class CoreDocumentTest extends TestCase
         $query = $this->mandango->getRepository('Model\Article')->createQuery();
         $article = $query->one();
 
-        $this->assertNull($query->getFieldsCache());
+        $this->assertSame(array('title' => 1, 'content' => 1), $query->getFieldsCache());
         $article->getTitle();
-        $this->assertSame(array('title' => 1), $query->getFieldsCache());
+        $this->assertSame(array('title' => 1, 'content' => 1), $query->getFieldsCache());
         $article->getContent();
         $this->assertSame(array('title' => 1, 'content' => 1), $query->getFieldsCache());
         $article->getNote();
@@ -438,46 +438,36 @@ class CoreDocumentTest extends TestCase
                 ),
             ),
         );
+
+        $expectedCache = array(
+            'source.name' => 1,
+            'source.text' => 1,
+            'source.info.text' => 1,
+            'source.info.line' => 1,
+        );
+
         $this->mandango->getRepository('Model\Article')->getCollection()->insert($articleRaw);
 
         $query = $this->mandango->getRepository('Model\Article')->createQuery();
         $article = $query->one();
 
         $source = $article->getSource();
-        $this->assertNull($query->getFieldsCache());
+        $this->assertSame($expectedCache, $query->getFieldsCache());
         $source->getName();
-        $this->assertSame(array('source.name' => 1), $query->getFieldsCache());
+        $this->assertSame($expectedCache, $query->getFieldsCache());
         $source->getText();
-        $this->assertSame(array('source.name' => 1, 'source.text' => 1), $query->getFieldsCache());
+        $this->assertSame($expectedCache, $query->getFieldsCache());
         $source->getNote();
-        $this->assertSame(array('source.name' => 1, 'source.text' => 1, 'source.note' => 1), $query->getFieldsCache());
+        $this->assertSame(array_merge($expectedCache, array('source.note' => 1)), $query->getFieldsCache());
 
         $info = $source->getInfo();
-        $this->assertSame(array('source.name' => 1, 'source.text' => 1, 'source.note' => 1), $query->getFieldsCache());
+        $this->assertSame(array_merge($expectedCache, array('source.note' => 1)), $query->getFieldsCache());
         $info->getName();
-        $this->assertSame(array(
-            'source.name' => 1,
-            'source.text' => 1,
-            'source.note' => 1,
-            'source.info.name' => 1,
-        ), $query->getFieldsCache());
+        $this->assertSame(array_merge($expectedCache, array('source.note' => 1, 'source.info.name' => 1)), $query->getFieldsCache());
         $info->getNote();
-        $this->assertSame(array(
-            'source.name' => 1,
-            'source.text' => 1,
-            'source.note' => 1,
-            'source.info.name' => 1,
-            'source.info.note' => 1,
-        ), $query->getFieldsCache());
+        $this->assertSame(array_merge($expectedCache, array('source.note' => 1, 'source.info.name' => 1, 'source.info.note' => 1)), $query->getFieldsCache());
         $info->getLine();
-        $this->assertSame(array(
-            'source.name' => 1,
-            'source.text' => 1,
-            'source.note' => 1,
-            'source.info.name' => 1,
-            'source.info.note' => 1,
-            'source.info.line' => 1,
-        ), $query->getFieldsCache());
+        $this->assertSame(array_merge($expectedCache, array('source.note' => 1, 'source.info.name' => 1, 'source.info.note' => 1)), $query->getFieldsCache());
     }
 
     public function testEmbeddedsManyGetter()
@@ -948,10 +938,11 @@ class CoreDocumentTest extends TestCase
 
         $query = $this->mandango->getRepository('Model\Article')->createQuery();
         $article = $query->one();
+        var_dump($article);
 
         $this->assertNull($query->getFieldsCache());
         $comments = $article->getComments();
-        $this->assertNull($query->getFieldsCache());
+        $this->assertSame(array('comments' => 1), $query->getFieldsCache());
         $savedComments = $comments->getSaved();
         $this->assertSame(array('comments' => 1), $query->getFieldsCache());
         foreach ($comments as $comment) {

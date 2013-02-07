@@ -219,7 +219,7 @@ abstract class Query implements \Countable, \IteratorAggregate
     public function references($references)
     {
         if (null !== $references && !is_array($references)) {
-            throw new \InvalidArgumentException(sprintf('The references "%s" are not valid.', print_r($references, true)));
+            throw new \InvalidArgumentException(sprintf('The references "%s" are not valid.', $references));
         }
 
         $this->references = $references;
@@ -253,7 +253,7 @@ abstract class Query implements \Countable, \IteratorAggregate
     public function sort($sort)
     {
         if (null !== $sort && !is_array($sort)) {
-            throw new \InvalidArgumentException(sprintf('The sort "%s" is not valid.', print_r($sort, true)));
+            throw new \InvalidArgumentException(sprintf('The sort "%s" is not valid.', $sort));
         }
 
         $this->sort = $sort;
@@ -288,7 +288,7 @@ abstract class Query implements \Countable, \IteratorAggregate
     {
         if (null !== $limit) {
             if (!is_numeric($limit) || $limit != (int) $limit) {
-                throw new \InvalidArgumentException(sprintf('The limit "%s" is not valid.', print_r($limit, true)));
+                throw new \InvalidArgumentException('The limit is not valid.');
             }
             $limit = (int) $limit;
         }
@@ -325,7 +325,7 @@ abstract class Query implements \Countable, \IteratorAggregate
     {
         if (null !== $skip) {
             if (!is_numeric($skip) || $skip != (int) $skip) {
-                throw new \InvalidArgumentException(sprintf('The skip "%s" is not valid.', print_r($skip, true)));
+                throw new \InvalidArgumentException('The skip is not valid.');
             }
             $skip = (int) $skip;
         }
@@ -360,7 +360,7 @@ abstract class Query implements \Countable, \IteratorAggregate
     {
         if (null !== $batchSize) {
             if (!is_numeric($batchSize) || $batchSize != (int) $batchSize) {
-                throw new \InvalidArgumentException(sprintf('The batchSize "%s" is not valid.', print_r($batchSize, true)));
+                throw new \InvalidArgumentException('The batchSize is not valid.');
             }
             $batchSize = (int) $batchSize;
         }
@@ -394,7 +394,7 @@ abstract class Query implements \Countable, \IteratorAggregate
     public function hint($hint)
     {
         if (null !== $hint && !is_array($hint)) {
-            throw new \InvalidArgumentException(sprintf('The hint "%s" is not valid.', print_r($hint, true)));
+            throw new \InvalidArgumentException(sprintf('The hint "%s" is not valid.', $hint));
         }
 
         $this->hint = $hint;
@@ -489,7 +489,7 @@ abstract class Query implements \Countable, \IteratorAggregate
     {
         if (null !== $timeout) {
             if (!is_numeric($timeout) || $timeout != (int) $timeout) {
-                throw new \InvalidArgumentException(sprintf('The limit "%s" is not valid.', print_r($timeout, true)));
+                throw new \InvalidArgumentException('The timeout is not valid.');
             }
             $timeout = (int) $timeout;
         }

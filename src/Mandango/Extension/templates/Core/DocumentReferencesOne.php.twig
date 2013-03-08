@@ -19,8 +19,7 @@
         }
 
 {% if referenceOne.dbref is defined %}
-        $repository = $this->getMandango()->getRepository('{{ referenceOne.class }}');
-        $reference = (null === $value || $value->isNew()) ? null : \MongoDBRef::create($repository->getCollectionName(), $value->getId());;
+        $reference = (null === $value || $value->isNew()) ? null : \MongoDBRef::create($value->getRepository()->getCollectionName(), $value->getId());;
 {% else %}
         $reference = (null === $value || $value->isNew()) ? null : $value->getId();
 {% endif %}

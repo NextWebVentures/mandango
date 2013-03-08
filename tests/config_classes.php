@@ -23,8 +23,10 @@ return array(
         ),
         'referencesOne' => array(
             'author'      => array('class' => 'Model\Author', 'field' => 'authorId', 'onDelete' => 'cascade'),
+            'authorDbref' => array('class' => 'Model\Author', 'field' => 'authorDbrefObj', 'onDelete' => 'cascade', 'dbref' => true),
             'information' => array('class' => 'Model\ArticleInformation', 'field' => 'informationId', 'onDelete' => 'unset'),
             'like'        => array('polymorphic' => true, 'field' => 'likeRef', 'onDelete' => 'cascade'),
+            'likeDbref'   => array('polymorphic' => true, 'field' => 'likeDbrefObj', 'onDelete' => 'cascade', 'dbref' => true),
             'likeUnset'   => array('polymorphic' => true, 'onDelete' => 'unset'),
             'friend'      => array('polymorphic' => true, 'field' => 'friendRef', 'onDelete' => 'cascade', 'discriminatorField' => 'name', 'discriminatorMap' => array(
                 'au' => 'Model\Author',
@@ -36,6 +38,11 @@ return array(
                 'ct' => 'Model\Category',
                 'us' => 'Model\User',
             )),
+            'friendDbref' => array('polymorphic' => true, 'field' => 'friendDbrefObj', 'onDelete' => 'cascade', 'discriminatorField' => 'name', 'discriminatorMap' => array(
+                'au' => 'Model\Author',
+                'ct' => 'Model\Category',
+                'us' => 'Model\User',
+            ), 'dbref' => true),
         ),
         'referencesMany' => array(
             'categories' => array('class' => 'Model\Category', 'field' => 'categoryIds', 'onDelete' => 'unset'),

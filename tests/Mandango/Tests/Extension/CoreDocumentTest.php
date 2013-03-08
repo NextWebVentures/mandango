@@ -112,6 +112,28 @@ class CoreDocumentTest extends TestCase
         $this->assertNull($article->getAuthorId());
     }
 
+    public function testReferencesOneSettersGettersDBRef()
+    {
+        $article = $this->mandango->create('Model\Article');
+        $this->assertNull($article->getAuthor());
+
+        $author = $this->mandango->create('Model\Author');
+        $this->assertSame($article, $article->setAuthorDbref($author));
+        $this->assertSame($author, $article->getAuthorDbref());
+        $this->assertNull($article->getAuthorDbrefObj());
+
+        $author = $this->mandango->create('Model\Author');
+        $author->setId($id = new \MongoId('123'));
+        $author->setIsNew(false);
+        $article->setAuthorDbref($author);
+        $this->assertSame($author, $article->getAuthorDbref());
+        $this->assertEquals(\MongoDBRef::create('model_author', $id), $article->getAuthorDbrefObj());
+
+        $article->setAuthorDbref(null);
+        $this->assertNull($article->getAuthorDbref());
+        $this->assertNull($article->getAuthorDbrefObj());
+    }
+
     public function testReferencesOneGetterSaveReferenceCache()
     {
         $articleRaw = array(

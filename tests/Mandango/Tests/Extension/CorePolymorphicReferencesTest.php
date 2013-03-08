@@ -36,6 +36,26 @@ class CorePolymorphicReferencesTest extends TestCase
         $this->assertSame($category, $article->getLike());
     }
 
+    public function testDocumentReferencesOneSetterGetterDBRef()
+    {
+        $article = $this->mandango->create('Model\Article');
+
+        $author = $this->mandango->create('Model\Author')->setName('foo')->save();
+        $category = $this->mandango->create('Model\Category')->setName('foo')->save();
+
+        $ref = \MongoDBRef::create('model_author', $author->getId());
+        $ref['_mandangoDocumentClass'] = 'Model\Author';
+        $this->assertSame($article, $article->setLikeDbref($author));
+        $this->assertSame($author, $article->getLikeDbref());
+        $this->assertSame($ref, $article->getLikeDbrefObj());
+
+        $ref = \MongoDBRef::create('model_category', $category->getId());
+        $ref['_mandangoDocumentClass'] = 'Model\Category';
+        $this->assertSame($article, $article->setLikeDbref($category));
+        $this->assertSame($category, $article->getLikeDbref());
+        $this->assertSame($ref, $article->getLikeDbrefObj());
+    }
+
     public function testDocumentReferencesOneSetterGetterDiscriminatorMap()
     {
         $article = $this->mandango->create('Model\Article');
@@ -55,6 +75,26 @@ class CorePolymorphicReferencesTest extends TestCase
             'id' => $category->getId(),
         ), $article->getFriendRef());
         $this->assertSame($category, $article->getFriend());
+    }
+
+    public function testDocumentReferencesOneSetterGetterDiscriminatorMapDBRef()
+    {
+        $article = $this->mandango->create('Model\Article');
+
+        $author = $this->mandango->create('Model\Author')->setName('foo')->save();
+        $category = $this->mandango->create('Model\Category')->setName('foo')->save();
+
+        $ref = \MongoDBRef::create('model_author', $author->getId());
+        $ref['name'] = 'au';
+        $this->assertSame($article, $article->setFriendDbref($author));
+        $this->assertSame($author, $article->getFriendDbref());
+        $this->assertSame($ref, $article->getFriendDbRefObj());
+
+        $ref = \MongoDBRef::create('model_category', $category->getId());
+        $ref['name'] = 'ct';
+        $this->assertSame($article, $article->setFriendDbref($category));
+        $this->assertSame($category, $article->getFriendDbref());
+        $this->assertSame($ref, $article->getFriendDbRefObj());
     }
 
     public function testDocumentReferencesOneGetterQuery()

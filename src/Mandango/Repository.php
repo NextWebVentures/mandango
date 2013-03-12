@@ -264,7 +264,7 @@ abstract class Repository
 
     public function findOneByDBRef($dbref)
     {
-        if (! ( \MongoDBRef::isRef($dbref) && $this->collectionName !== $dbref['$ref'])) {
+        if (! ( \MongoDBRef::isRef($dbref) && $this->collectionName === $dbref['$ref'])) {
             throw new \InvalidArgumentException("Reference must be a DBRef object and repository must match");
         }
 

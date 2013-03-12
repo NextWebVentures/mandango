@@ -194,8 +194,8 @@ class RepositoryTest extends TestCase
         $this->assertSame($article3, $repository->findOneById($articles[3]->getId()->__toString()));
 
         $identityMap->clear();
-        $id1 = \MongoDBRef::create('model_article', $articles[1]->getId());
-        $id3 = \MongoDBRef::create('model_article', $articles[3]->getId());
+        $id1 = \MongoDBRef::create('articles', $articles[1]->getId());
+        $id3 = \MongoDBRef::create('articles', $articles[3]->getId());
         $this->assertEquals($articles[1], $article1 = $repository->findOneByDBRef($id1));
         $this->assertEquals($articles[3], $article3 = $repository->findOneByDBRef($id3));
         $this->assertSame($article1, $repository->findOneByDBRef($id1));

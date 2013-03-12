@@ -18,8 +18,13 @@
             throw new \InvalidArgumentException('The "{{ name }}" reference is not an instance of {{ referenceOne.class }}.');
         }
 
-        $this->set{{ referenceOne.field|ucfirst }}((null === $value || $value->isNew()) ? null : $value->getId());
+{% if referenceOne.dbref is defined %}
+        $reference = (null === $value || $value->isNew()) ? null : \MongoDBRef::create($value->getRepository()->getCollectionName(), $value->getId());;
+{% else %}
+        $reference = (null === $value || $value->isNew()) ? null : $value->getId();
+{% endif %}
 
+        $this->set{{ referenceOne.field|ucfirst }}($reference);
         $this->data['referencesOne']['{{ name }}'] = $value;
 
         return $this;
@@ -38,10 +43,17 @@
                 $this->addReferenceCache('{{ name }}');
             }
 {% endif %}
-            if (!$id = $this->get{{ referenceOne.field|ucfirst }}()) {
+            if (!$reference = $this->get{{ referenceOne.field|ucfirst }}()) {
                 return null;
             }
-            if (!$document = $this->getMandango()->getRepository('{{ referenceOne.class }}')->findOneById($id)) {
+
+            $repository = $this->getMandango()->getRepository('{{ referenceOne.class }}');
+{% if referenceOne.dbref is defined %}
+            $document = $repository->findOneByDBRef($reference);
+{% else %}
+            $document = $repository->findOneById($reference);
+{% endif %}
+            if (!$document) {
                 throw new \RuntimeException('The reference "{{ name }}" does not exist.');
             }
             $this->data['referencesOne']['{{ name }}'] = $document;
@@ -76,13 +88,19 @@
 {% else %}
             $discriminatorValue = get_class($value);
 {% endif %}
+
+{% if referenceOne.dbref is defined %}
+            $repository = $this->getMandango()->getRepository(get_class($value));
+            $fieldValue = \MongoDBRef::create($repository->getCollectionName(), $value->getId());
+            $fieldValue['{{ referenceOne.discriminatorField }}'] = $discriminatorValue;
+{% else %}
             $fieldValue = array(
                 '{{ referenceOne.discriminatorField }}' => $discriminatorValue,
                 'id' => $value->getId(),
             );
+{% endif %}
         }
         $this->set{{ referenceOne.field|ucfirst }}($fieldValue);
-
         $this->data['referencesOne']['{{ name }}'] = $value;
 
         return $this;
@@ -105,7 +123,15 @@
 {% else %}
             $discriminatorValue = $ref['{{ referenceOne.discriminatorField }}'];
 {% endif %}
-            if (!$document = $this->getMandango()->getRepository($discriminatorValue)->findOneById($ref['id'])) {
+
+            $repository = $this->getMandango()->getRepository($discriminatorValue);
+
+{% if referenceOne.dbref is defined %}
+            $document = $repository->findOneByDBRef($ref);
+{% else %}
+            $document = $repository->findOneById($ref['id']);
+{% endif %}
+            if (!$document) {
                 throw new \RuntimeException('The reference "{{ name }}" does not exist.');
             }
             $this->data['referencesOne']['{{ name }}'] = $document;

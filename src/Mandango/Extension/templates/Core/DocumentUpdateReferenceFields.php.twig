@@ -16,7 +16,13 @@
 {# normal (not polymorphic) #}
 {% if reference.class is defined %}
         if (isset($this->data['referencesOne']['{{ name }}']) && !isset($this->data['fields']['{{ reference.field }}'])) {
-            $this->set{{ reference.field|ucfirst }}($this->data['referencesOne']['{{ name }}']->getId());
+{% if reference.dbref is defined %}
+            $value = $this->data['referencesOne']['{{ name }}'];
+            $reference = \MongoDBRef::create($value->getRepository()->getCollectionName(), $value->getId());
+{% else %}
+            $reference = $this->data['referencesOne']['{{ name }}']->getId();
+{% endif %}
+            $this->set{{ reference.field|ucfirst }}($reference);
         }
 {# polymorphic #}
 {% else %}
@@ -29,10 +35,16 @@
 {% else %}
             $discriminatorValue = get_class($document);
 {% endif %}
-            $this->set{{ reference.field|ucfirst }}(array(
+{% if reference.dbref is defined %}
+            $reference = \MongoDBRef::create($document->getRepository()->getCollectionName(), $document->getId());
+            $reference['{{ reference.discriminatorField }}'] = $discriminatorValue;
+{% else %}
+            $reference = array(
                 '{{ reference.discriminatorField }}' => $discriminatorValue,
                 'id' => $document->getId(),
-            ));
+            );
+{% endif %}
+            $this->set{{ reference.field|ucfirst }}($reference);
         }
 {% endif %}
 {% endif %}
@@ -45,17 +57,30 @@
         if (isset($this->data['referencesMany']['{{ name }}'])) {
             $group = $this->data['referencesMany']['{{ name }}'];
             $add = $group->getAdd();
-            $remove = $group->getRemove();
+            $remove = array_map(function ($document) {
+                return $document->getId();
+            }, $group->getRemove());
+
             if ($add || $remove) {
                 $ids = $this->get{{ reference.field|ucfirst }}();
+{# dbref @ references many #}
+{% if reference.dbref is defined %}
+                foreach ($add as $document) {
+                    $ids[] = \MongoDBRef::create($document->getRepository()->getCollectionName(), $document->getId());
+                }
+                $ids = array_filter($ids, function ($dbref) use ($remove) {
+                    return !in_array($dbref['$id'], $remove);
+                });
+{% else %}
                 foreach ($add as $document) {
                     $ids[] = $document->getId();
                 }
-                foreach ($remove as $document) {
-                    if (false !== $key = array_search($document->getId(), $ids)) {
+                foreach ($remove as $id) {
+                    if (false !== $key = array_search($id, $ids)) {
                         unset($ids[$key]);
                     }
                 }
+{% endif %}
                 $this->set{{ reference.field|ucfirst }}($ids ? array_values($ids) : null);
             }
         }
@@ -64,7 +89,9 @@
         if (isset($this->data['referencesMany']['{{ name }}'])) {
             $group = $this->data['referencesMany']['{{ name }}'];
             $add = $group->getAdd();
-            $remove = $group->getRemove();
+            $remove = array_map(function ($document) {
+                return $document->getId();
+            }, $group->getRemove());
             if ($add || $remove) {
 {% if reference.discriminatorMap %}
                 $discriminatorMapValues = {{ reference.discriminatorMap|var_export }};
@@ -78,26 +105,27 @@
 {% else %}
                     $discriminatorValue = get_class($document);
 {% endif %}
+{% if reference.dbref is defined %}
+                    $reference = \MongoDBRef::create($document->getRepository()->getCollectionName(), $document->getId());
+                    $reference['{{ reference.discriminatorField }}'] = $discriminatorValue;
+                    $ids[] = $reference;
+{% else %}
                     $ids[] = array(
                         '{{ reference.discriminatorField }}' => $discriminatorValue,
                         'id' => $document->getId(),
                     );
-                }
-                foreach ($remove as $document) {
-{% if reference.discriminatorMap %}
-                    if (false === $discriminatorValue = array_search(get_class($document), $discriminatorMapValues)) {
-                        throw new \RuntimeException(sprintf('The class "%s" is not a possible reference in the reference "{{ name }}" of the class "{{ class }}".', get_class($value)));
-                    }
-{% else %}
-                    $discriminatorValue = get_class($document);
 {% endif %}
-                    if (false !== $key = array_search($search = array(
-                        '{{ reference.discriminatorField }}' => $discriminatorValue,
-                        'id' => $document->getId(),
-                    ), $ids)) {
-                        unset($ids[$key]);
-                    }
                 }
+
+                $ids = array_filter($ids, function ($dbref) use ($remove) {
+{# dbref @ polimorfic references many #}
+{% if reference.dbref is defined %}
+                    return !in_array($dbref['$id'], $remove);
+{% else %}
+                    return !in_array($dbref['id'], $remove);
+{% endif %}
+                });
+
                 $this->set{{ reference.field|ucfirst }}($ids ? array_values($ids) : null);
             }
         }

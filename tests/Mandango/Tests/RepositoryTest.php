@@ -168,7 +168,7 @@ class RepositoryTest extends TestCase
         $this->assertInstanceOf('MongoId', $ids[2]);
     }
 
-    public function testFindByIdAndFindOneById()
+    public function testFindByIdAndFindOneByIdAndFindOneByDBRef()
     {
         $articles = array();
         $articlesById = array();
@@ -192,6 +192,14 @@ class RepositoryTest extends TestCase
         $this->assertEquals($articles[3], $article3 = $repository->findOneById($articles[3]->getId()->__toString()));
         $this->assertSame($article1, $repository->findOneById($articles[1]->getId()->__toString()));
         $this->assertSame($article3, $repository->findOneById($articles[3]->getId()->__toString()));
+
+        $identityMap->clear();
+        $id1 = \MongoDBRef::create('articles', $articles[1]->getId());
+        $id3 = \MongoDBRef::create('articles', $articles[3]->getId());
+        $this->assertEquals($articles[1], $article1 = $repository->findOneByDBRef($id1));
+        $this->assertEquals($articles[3], $article3 = $repository->findOneByDBRef($id3));
+        $this->assertSame($article1, $repository->findOneByDBRef($id1));
+        $this->assertSame($article3, $repository->findOneByDBRef($id3));
 
         $identityMap->clear();
         $this->assertEquals(array(

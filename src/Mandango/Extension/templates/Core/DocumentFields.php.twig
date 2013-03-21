@@ -2,6 +2,7 @@
 
 {% for name, field in config_class.fields %}
 
+{% set reference = null %}
 {% if field.referenceField is defined and field.referenceField == true and field.referenceFieldName is defined %}
     {% if config_class.referencesOne[field.referenceFieldName] is defined %}
         {% set reference = config_class.referencesOne[field.referenceFieldName] %}
@@ -21,8 +22,7 @@
      */
     public function set{{ name|ucfirst }}($value)
     {
-
-{% if reference is defined %}
+{% if reference is defined and reference.dbref is defined and reference.dbref == true %}
 
 {# normal: not polymorphic #}
 {% if reference.polymorphic is not defined or reference.polymorphic == false %}

@@ -74,11 +74,11 @@
      */
     public function set{{ name|ucfirst }}($value)
     {
-        if (!$value instanceof \Mandango\Document\Document) {
+        if (!is_null($value) && !$value instanceof \Mandango\Document\Document) {
             throw new \InvalidArgumentException('The reference is not a mandango document.');
         }
 
-        if (null === $value || $value->isNew()) {
+        if (is_null($value) || $value->isNew()) {
             $fieldValue = null;
         } else {
 {% if referenceOne.discriminatorMap %}

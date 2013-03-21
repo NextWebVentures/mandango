@@ -26,7 +26,7 @@
 
 {# normal: not polymorphic #}
 {% if reference.polymorphic is not defined or reference.polymorphic == false %}
-        if (!\MongoDBRef::isRef($value) || empty($value['$id']) || empty($value['$ref'])) {
+        if (!is_null($value) && (!\MongoDBRef::isRef($value) || empty($value['$id']) || empty($value['$ref']))) {
             // we won't it!
             throw new \InvalidArgumentException('The value is invalid');
         }
@@ -66,14 +66,15 @@
                     throw new \InvalidArgumentException('The ref is invalid (collection and document mismatch)');
                 }
             }
-        } else {
+
+            // possible to do: check if it's correct ID? i don't think so - it isn't rdbms
+            $value = \MongoDBRef::create($collectionName, $id);
+            $value['{{ reference.discriminatorField }}'] = $discriminatorValue;
+        } elseif (!is_null($value)) {
             // we won't it!
             throw new \InvalidArgumentException('The value is invalid');
         }
 
-        // possible to do: check if it's correct ID? i don't think so - it isn't rdbms
-        $value = \MongoDBRef::create($collectionName, $id);
-        $value['{{ reference.discriminatorField }}'] = $discriminatorValue;
 {% endif %}
 {% endif %}
 

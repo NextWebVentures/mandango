@@ -401,6 +401,11 @@ class Core extends Extension
                 $reference['field'] = $name.'_reference_field';
             }
             $field = array('type' => 'raw', 'dbName' => $name, 'referenceField' => true);
+
+            if (isset($reference['dbref']) && true === $reference['dbref']) {
+                $field['referenceFieldName'] = $name; // is the same as dbName now, but not always will be
+            }
+
             if (!empty($reference['inherited'])) {
                 $field['inherited'] = true;
             }
@@ -419,6 +424,11 @@ class Core extends Extension
                 $reference['field'] = $name.'_reference_field';
             }
             $field = array('type' => 'raw', 'dbName' => $name, 'referenceField' => true);
+
+            if (isset($reference['dbref']) && true === $reference['dbref']) {
+                $field['referenceFieldName'] = $name; // is the same as dbName now, but not always will be
+            }
+
             if (!empty($reference['inherited'])) {
                 $field['inherited'] = true;
             }

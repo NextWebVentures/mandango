@@ -1,15 +1,82 @@
 <?php
 
 {% for name, field in config_class.fields %}
+
+{% if field.referenceField is defined and field.referenceField == true and field.referenceFieldName is defined %}
+    {% if config_class.referencesOne[field.referenceFieldName] is defined %}
+        {% set reference = config_class.referencesOne[field.referenceFieldName] %}
+    {# elseif config_class.referencesMany[field.referenceFieldName] is defined %}
+        {% set reference = config_class.referencesMany[field.referenceFieldName] %} {# TODO does it work? #}
+    {% endif %}
+{% endif %}
+
     /**
      * Set the "{{ name }}" field.
      *
      * @param mixed $value The value.
      *
+     * @throws \InvalidArgumentException
+     *
      * @return \{{ class }} The document (fluent interface).
      */
     public function set{{ name|ucfirst }}($value)
     {
+
+{% if reference is defined %}
+
+{# normal: not polymorphic #}
+{% if reference.polymorphic is not defined or reference.polymorphic == false %}}
+        if (!\MongoDBRef::isRef($value) || empty($value['$id']) || empty($value['$ref'])) {
+            // we won't it!
+            throw new \InvalidArgumentException('The value is invalid');
+        }
+
+{# polymorphic #}
+{% elseif reference.discriminatorField is defined and reference.discriminatorField is not empty %}
+        $discriminatorMap = {{ reference.discriminatorMap|var_export }};
+
+        if ((\MongoDBRef::isRef($value) || (is_array($value))) && !empty($value['$id'])) {
+            $id = $value['$id'];
+
+            if (isset($value['{{ reference.discriminatorField }}']) && !empty($value['{{ reference.discriminatorField }}'])) {
+                $discriminatorValue = $value['{{ reference.discriminatorField }}'];
+
+                $discriminatorValueIndex = array_search($discriminatorValue, $discriminatorMap, true);
+                if (false !== $discriminatorValueIndex) {
+                    $discriminatorValue = $discriminatorValueIndex;
+                }
+
+                if (!array_key_exists($discriminatorValue, $discriminatorMap)) {
+                    throw new \InvalidArgumentException(
+                        sprintf(
+                            'The discriminator value "%s" is not a possible in the reference "{{ name }}" of the class "{{ class }}".',
+                            $discriminatorValue
+                        )
+                    );
+                }
+            } else {
+                throw new \InvalidArgumentException('The ref is invalid (missing discriminatorField class name)');
+            }
+
+            $repository = $this->getMandango()->getRepository($discriminatorMap[$discriminatorValue]);
+            $collectionName = $repository->getCollectionName();
+
+            if (isset($value['$ref']) && !empty($value['$ref'])) {
+                if ($collectionName !== $value['$ref']) {
+                    throw new \InvalidArgumentException('The ref is invalid (collection and document mismatch)');
+                }
+            }
+        } else {
+            // we won't it!
+            throw new \InvalidArgumentException('The value is invalid');
+        }
+
+        // possible to do: check if it's correct ID? i don't think so - it isn't rdbms
+        $value = \MongoDBRef::create($collectionName, $id);
+        $value['{{ reference.discriminatorField }}'] = $discriminatorValue;
+{% endif %}
+{% endif %}
+
         if (!isset($this->data['fields']['{{ name }}'])) {
 {% if config_class.isEmbedded %}
             if (($rap = $this->getRootAndPath()) && !$rap['root']->isNew()) {
@@ -32,7 +99,7 @@
             return $this;
         }
 
-        if (!isset($this->fieldsModified['{{ name }}']) && !array_key_exists('{{ name }}', $this->fieldsModified)) {
+        if (!array_key_exists('{{ name }}', $this->fieldsModified)) {
             $this->fieldsModified['{{ name }}'] = $this->data['fields']['{{ name }}'];
         } elseif ($value === $this->fieldsModified['{{ name }}']) {
             unset($this->fieldsModified['{{ name }}']);

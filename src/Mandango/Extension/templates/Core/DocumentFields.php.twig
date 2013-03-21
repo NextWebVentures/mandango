@@ -25,7 +25,7 @@
 {% if reference is defined %}
 
 {# normal: not polymorphic #}
-{% if reference.polymorphic is not defined or reference.polymorphic == false %}}
+{% if reference.polymorphic is not defined or reference.polymorphic == false %}
         if (!\MongoDBRef::isRef($value) || empty($value['$id']) || empty($value['$ref'])) {
             // we won't it!
             throw new \InvalidArgumentException('The value is invalid');

@@ -551,13 +551,15 @@ abstract class Query implements \Countable, \IteratorAggregate
     /**
      * Count the number of results of the query.
      *
+     * @param bool $all Send cursor limit and skip information to the count function, if applicable.
+     *
      * @return int The number of results of the query.
      *
      * @api
      */
-    public function count()
+    public function count($all = false)
     {
-        return $this->createCursor()->count();
+        return $this->createCursor()->count($all);
     }
 
     protected function mapFieldNames(array $fields = array())

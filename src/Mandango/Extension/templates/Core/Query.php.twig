@@ -97,7 +97,7 @@
                         }
                     }
                     if ($ids) {
-                        $mandango->getRepository($reference['class'])->findById(array_unique($ids));
+                        $mandango->getRepository($reference['class'])->findById(array_unique($ids, SORT_REGULAR));
                     }
 
                     continue;
@@ -117,7 +117,7 @@
                         }
                     }
                     if ($ids) {
-                        $mandango->getRepository($reference['class'])->findById(array_unique($ids));
+                        $mandango->getRepository($reference['class'])->findById(array_unique($ids, SORT_REGULAR));
                     }
 
                     continue;

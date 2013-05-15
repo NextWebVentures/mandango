@@ -355,6 +355,42 @@ class CoreDocumentTest extends TestCase
         }
     }
 
+    public function testSaveReferencesShouldSaveReferencesInEmbeddedsOne()
+    {
+        $article = $this->create('Model\Article');
+        $source = $this->create('Model\Source')->setName('foo');
+        $author = $this->create('Model\Author')->setName('foo');
+        $category = $this->create('Model\Category')->setName('foo');
+
+        $source->setAuthor($author);
+        $source->addCategories($category);
+        $article->setSource($source);
+
+        $article->saveReferences();
+
+        $this->assertFalse($author->isNew());
+        $this->assertFalse($category->isNew());
+    }
+
+    public function testSaveReferencesShouldSaveReferencesInEmbeddedsMany()
+    {
+        $article = $this->create('Model\Article');
+        $comment1 = $this->create('Model\Comment')->setName('foo');
+        $comment2 = $this->create('Model\Comment')->setName('foo');
+        $author = $this->create('Model\Author')->setName('foo');
+        $category = $this->create('Model\Category')->setName('foo');
+
+        $comment1->setAuthor($author);
+        $comment2->addCategories($category);
+        $article->addComments(array($comment1, $comment2));
+
+        $article->saveReferences();
+
+        $this->assertFalse($author->isNew());
+        $this->assertFalse($category->isNew());
+    }
+
+
     public function testEmbeddedsOneSettersGetters()
     {
         $article = $this->mandango->create('Model\Article');

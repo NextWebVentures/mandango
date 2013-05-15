@@ -53,4 +53,18 @@
 {% endif %}
 {% endif %}
 {% endfor %}
+{# embeddeds many #}
+{% for name, embedded in config_class.embeddedsMany %}
+{# not inherited #}
+{% if embedded.inherited is not defined or not embedded.inherited %}
+{# has references #}
+{% if config_classes[embedded.class]['_has_references'] %}
+        if (isset($this->data['embeddedsMany']['{{ name }}'])) {
+            foreach ($this->data['embeddedsMany']['{{ name }}'] as $embedded) {
+                $embedded->saveReferences();
+            }
+        }
+{% endif %}
+{% endif %}
+{% endfor %}
     }

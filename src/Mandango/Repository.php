@@ -226,20 +226,53 @@ abstract class Repository
      */
     public function findById(array $ids)
     {
-        $ids = $this->idsToMongo($ids);
+        $mongoIds = $this->idsToMongo($ids);
+        $cachedDocuments = $this->findCachedDocuments($mongoIds);
 
+        if ($this->areAllDocumentsCached($cachedDocuments, $mongoIds)) {
+            return $cachedDocuments;
+        }
+
+        $idsToQuery = $this->getIdsToQuery($cachedDocuments, $mongoIds);
+        $queriedDocuments = $this->queryDocumentsByIds($idsToQuery);
+
+        return array_merge($cachedDocuments, $queriedDocuments);
+    }
+
+    private function findCachedDocuments($mongoIds)
+    {
         $documents = array();
-        foreach ($ids as $id) {
+        foreach ($mongoIds as $id) {
             if ($this->identityMap->has($id)) {
                 $documents[(string) $id] = $this->identityMap->get($id);
             }
         }
 
-        if (count($documents) == count($ids)) {
-            return $documents;
+        return $documents;
+    }
+
+    private function areAllDocumentsCached($cachedDocuments, $mongoIds)
+    {
+        return count($cachedDocuments) == count($mongoIds);
+    }
+
+    private function getIdsToQuery($cachedDocuments, $mongoIds)
+    {
+        $ids = array();
+        foreach ($mongoIds as $id) {
+            if (!isset($cachedDocuments[(string) $id])) {
+                $ids[] = $id;
+            }
         }
 
-        return $this->createQuery(array('_id' => array('$in' => $ids)))->all();
+        return $ids;
+    }
+
+    private function queryDocumentsByIds($ids)
+    {
+        $criteria = array('_id' => array('$in' => $ids));
+
+        return $this->createQuery($criteria)->all();
     }
 
     /**
@@ -345,11 +378,7 @@ abstract class Repository
      */
     public function distinct($field, array $query = array())
     {
-        return $this->getConnection()->getMongoDB()->command(array(
-            'distinct' => $this->getCollectionName(),
-            'key'      => $field,
-            'query'    => $query,
-        ));
+        return $this->getCollection()->distinct($field, $query);
     }
 
     /**
@@ -365,9 +394,9 @@ abstract class Repository
      *
      * @throws \RuntimeException If the database returns an error.
      */
-    public function mapReduce($map, $reduce, array $out, array $query = array(), array $options = array())
+    public function mapReduce($map, $reduce, array $out, array $query = array(), array $command = array(), $options = array())
     {
-        $command = array_merge($options, array(
+        $command = array_merge($command, array(
             'mapreduce' => $this->getCollectionName(),
             'map'       => is_string($map) ? new \MongoCode($map) : $map,
             'reduce'    => is_string($reduce) ? new \MongoCode($reduce) : $reduce,
@@ -375,7 +404,7 @@ abstract class Repository
             'query'     => $query,
         ));
 
-        $result = $this->getConnection()->getMongoDB()->command($command);
+        $result = $this->command($command, $options);
 
         if (!$result['ok']) {
             throw new \RuntimeException($result['errmsg']);
@@ -385,6 +414,16 @@ abstract class Repository
             return $result['results'];
         }
 
-        return $this->getConnection()->getMongoDB()->selectCollection($result['result'])->find();
+        return $this->getMongoDB()->selectCollection($result['result'])->find();
+    }
+
+    private function command($command, $options = array())
+    {
+        return $this->getMongoDB()->command($command, $options);
+    }
+
+    private function getMongoDB()
+    {
+        return $this->getConnection()->getMongoDB();
     }
 }

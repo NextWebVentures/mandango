@@ -6,7 +6,7 @@
 {% if field.referenceField is defined and field.referenceField == true and field.referenceFieldName is defined %}
     {% if config_class.referencesOne[field.referenceFieldName] is defined %}
         {% set reference = config_class.referencesOne[field.referenceFieldName] %}
-    {# elseif config_class.referencesMany[field.referenceFieldName] is defined %}
+    {% elseif config_class.referencesMany[field.referenceFieldName] is defined %}
         {% set reference = config_class.referencesMany[field.referenceFieldName] %} {# TODO does it work? #}
     {% endif %}
 {% endif %}
@@ -32,7 +32,7 @@
         }
 
 {# polymorphic #}
-{% elseif reference.discriminatorField is defined and reference.discriminatorField is not empty %}
+{% elseif reference.discriminatorField is not empty and reference.discriminatorMap is not empty %}
         $discriminatorMap = {{ reference.discriminatorMap|var_export }};
 
         if ((\MongoDBRef::isRef($value) || (is_array($value))) && !empty($value['$id'])) {

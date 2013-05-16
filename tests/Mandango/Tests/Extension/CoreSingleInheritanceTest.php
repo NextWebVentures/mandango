@@ -273,48 +273,192 @@ class CoreSingleInheritanceTest extends TestCase
         $this->assertSame(8, $this->mandango->getRepository('Model\TextareaFormElement')->getCollection()->count());
     }
 
+    public function testQueryCyclicReferences()
+    {
+        $parent = $this->mandango
+            ->create('Model\CyclicSingleInheritance')
+            ->setName("parent")
+            ->save();
+        $parentRepo = $this->mandango->getRepository('Model\CyclicSingleInheritance');
+
+        $variant1id = uniqid('variant1');
+        $variant1 = $this->mandango
+            ->create('Model\CyclicSingleInheritanceVariant1')
+            ->setName("variant1")
+            ->setParent($parent)
+            ->setVariant1($variant1id)
+            ->save();
+        $variant1repo = $this->mandango->getRepository('Model\CyclicSingleInheritanceVariant1');
+
+        $variant2id = uniqid('variant2');
+        $variant2 = $this->mandango
+            ->create('Model\CyclicSingleInheritanceVariant2')
+            ->setName("variant2")
+            ->setParent($parent)
+            ->setVariant2($variant2id)
+            ->save();
+        $variant2repo = $this->mandango->getRepository('Model\CyclicSingleInheritanceVariant2');
+
+        $variant3id = uniqid('variant3');
+        $variant3 = $this->mandango
+            ->create('Model\CyclicSingleInheritanceVariant3')
+            ->setName("variant3")
+            ->setParent($variant1)
+            ->setVariant1($variant3id)
+            ->setVariant3($variant3id)
+            ->save();
+        $variant3repo = $this->mandango->getRepository('Model\CyclicSingleInheritanceVariant3');
+
+        $grandchildId = uniqid('grandchild');
+        $grandchild = $this->mandango
+            ->create('Model\CyclicSingleInheritanceVariant2')
+            ->setName("grandchild")
+            ->setParent($variant1)
+            ->setVariant2($grandchildId)
+            ->save();
+
+        $parentRepo->getIdentityMap()->clear();
+        $variant1repo->getIdentityMap()->clear();
+        $variant2repo->getIdentityMap()->clear();
+        $variant3repo->getIdentityMap()->clear();
+
+        # populate cache...
+        $v1 = $parentRepo->createQuery(array('_id' => $variant1->getId()))->one();
+        $v2 = $parentRepo->createQuery(array('_id' => $variant2->getId()))->one();
+        $v3 = $parentRepo->createQuery(array('_id' => $variant3->getId()))->one();
+        $gc = $parentRepo->createQuery(array('_id' => $grandchild->getId()))->one();
+
+        $this->assertInstanceOf('Model\CyclicSingleInheritanceVariant1', $v1);
+        $this->assertInstanceOf('Model\CyclicSingleInheritance', $v1->getParent());
+        $this->assertEquals('variant1', $v1->getName());
+        $this->assertEquals($variant1id, $v1->getVariant1());
+        $this->assertFalse(method_exists($v1, 'getVariant2'));
+
+        $this->assertInstanceOf('Model\CyclicSingleInheritanceVariant2', $v2);
+        $this->assertInstanceOf('Model\CyclicSingleInheritance', $v2->getParent());
+        $this->assertEquals('variant2', $v2->getName());
+        $this->assertEquals($variant2id, $v2->getVariant2());
+        $this->assertFalse(method_exists($v2, 'getVariant1'));
+
+        $this->assertInstanceOf('Model\CyclicSingleInheritanceVariant3', $v3);
+        $this->assertInstanceOf('Model\CyclicSingleInheritanceVariant1', $v3Parent = $v3->getParent());
+        $this->assertInstanceOf('Model\CyclicSingleInheritance', $v3Parent->getParent());
+        $this->assertEquals('variant3', $v3->getName());
+        $this->assertEquals($variant3id, $v3->getVariant1());
+        $this->assertEquals($variant3id, $v3->getVariant3());
+        $this->assertFalse(method_exists($v3, 'getVariant2'));
+
+        $this->assertInstanceOf('Model\CyclicSingleInheritanceVariant2', $gc);
+        $this->assertInstanceOf('Model\CyclicSingleInheritanceVariant1', $gcParent = $gc->getParent());
+        $this->assertInstanceOf('Model\CyclicSingleInheritance', $gcParent->getParent());
+        $this->assertEquals('grandchild', $gc->getName());
+        $this->assertEquals($grandchildId, $gc->getVariant2());
+
+        // clean...
+        unset($v1, $v2, $v3, $gc);
+
+        # refetch based on cache
+        $v1 = $parentRepo->createQuery(array('_id' => $variant1->getId()))->one();
+        $v2 = $parentRepo->createQuery(array('_id' => $variant2->getId()))->one();
+        $v3 = $parentRepo->createQuery(array('_id' => $variant3->getId()))->one();
+        $gc = $parentRepo->createQuery(array('_id' => $grandchild->getId()))->one();
+
+        $this->assertInstanceOf('Model\CyclicSingleInheritanceVariant1', $v1);
+        $this->assertInstanceOf('Model\CyclicSingleInheritance', $v1->getParent());
+        $this->assertEquals('variant1', $v1->getName());
+        $this->assertEquals($variant1id, $v1->getVariant1());
+        $this->assertFalse(method_exists($v1, 'getVariant2'));
+
+        $this->assertInstanceOf('Model\CyclicSingleInheritanceVariant2', $v2);
+        $this->assertInstanceOf('Model\CyclicSingleInheritance', $v2->getParent());
+        $this->assertEquals('variant2', $v2->getName());
+        $this->assertEquals($variant2id, $v2->getVariant2());
+        $this->assertFalse(method_exists($v2, 'getVariant1'));
+
+        $this->assertInstanceOf('Model\CyclicSingleInheritanceVariant3', $v3);
+        $this->assertInstanceOf('Model\CyclicSingleInheritanceVariant1', $v3Parent = $v3->getParent());
+        $this->assertInstanceOf('Model\CyclicSingleInheritance', $v3Parent->getParent());
+        $this->assertEquals('variant3', $v3->getName());
+        $this->assertEquals($variant3id, $v3->getVariant1());
+        $this->assertEquals($variant3id, $v3->getVariant3());
+        $this->assertFalse(method_exists($v3, 'getVariant2'));
+
+        $this->assertInstanceOf('Model\CyclicSingleInheritanceVariant2', $gc);
+        $this->assertInstanceOf('Model\CyclicSingleInheritanceVariant1', $gcParent = $gc->getParent());
+        $this->assertInstanceOf('Model\CyclicSingleInheritance', $gcParent->getParent());
+        $this->assertEquals('grandchild', $gc->getName());
+        $this->assertEquals($grandchildId, $gc->getVariant2());
+    }
+
     public function testQueryAll()
     {
         $elements = array();
         for ($i = 0; $i < 2; $i++) {
-            $elements[] = $this->mandango->create('Model\Element')->setLabel('Element'.$i)->save();
+            $elements[] = $this->mandango->create('Model\Element')
+                ->setLabel('Element'.$i)
+                ->save();
+        }
+
+        $textElements = array();
+        for ($i = 0; $i < 2; $i++) {
+            $textElements[] = $this->mandango->create('Model\TextElement')
+                ->setLabel('TextElement'.$i)
+                ->setHtmltext("<p>$i</p>")
+                ->save();
         }
 
         $formElements = array();
         for ($i = 0; $i < 5; $i++) {
-            $formElements[] = $this->mandango->create('Model\FormElement')->setLabel('FormElement'.$i)->save();
+            $formElements[] = $this->mandango->create('Model\FormElement')
+                ->setLabel('FormElement'.$i)
+                ->save();
         }
 
         $textareaFormElements = array();
         for ($i = 0; $i < 5; $i++) {
-            $textareaFormElements[] = $this->mandango->create('Model\TextareaFormElement')->setLabel('Textarea'.$i)->save();
+            $textareaFormElements[] = $this->mandango->create('Model\TextareaFormElement')
+                ->setLabel('Textarea'.$i)
+                ->save();
         }
 
         $radioFormElements = array();
         for ($i = 0; $i < 5; $i++) {
-            $radioFormElements[] = $this->mandango->create('Model\RadioFormElement')->setLabel('Radio'.$i)->save();
+            $radioFormElements[] = $this->mandango->create('Model\RadioFormElement')
+                ->setLabel('Radio'.$i)
+                ->setOptions(array( 'option' => 'value'.$i ))
+                ->save();
         }
 
         $this->mandango->getRepository('Model\FormElement')->getIdentityMap()->clear();
         $this->mandango->getRepository('Model\TextareaFormElement')->getIdentityMap()->clear();
         $this->mandango->getRepository('Model\RadioFormElement')->getIdentityMap()->clear();
+        $this->mandango->getRepository('Model\TextElement')->getIdentityMap()->clear();
 
         // different classes in root class
         $document = $this->mandango->getRepository('Model\Element')->createQuery(array('_id' => $formElements[0]->getId()))->one();
         $this->assertInstanceof('Model\FormElement', $document);
         $this->assertEquals($formElements[0]->getId(), $document->getId());
-        $document = $this->mandango->getRepository('Model\Element')->createQuery(array('_id' => $radioFormElements[0]->getId()))->one();
-        $this->assertInstanceof('Model\RadioFormElement', $document);
-        $this->assertEquals($radioFormElements[0]->getId(), $document->getId());
+
+        $document = $this->mandango->getRepository('Model\TextElement')->createQuery(array('_id' => $textElements[0]->getId()))->one();
+        $this->assertInstanceof('Model\TextElement', $document);
+        $this->assertEquals($textElements[0]->getId(), $document->getId());
+
         $document = $this->mandango->getRepository('Model\FormElement')->createQuery(array('_id' => $formElements[0]->getId()))->one();
         $this->assertInstanceof('Model\FormElement', $document);
         $this->assertEquals($formElements[0]->getId(), $document->getId());
+
         $document = $this->mandango->getRepository('Model\FormElement')->createQuery(array('_id' => $textareaFormElements[0]->getId()))->one();
-        //$this->assertInstanceof('Model\TextareaFormElement', $document);
+        $this->assertInstanceof('Model\TextareaFormElement', $document);
         $this->assertEquals($textareaFormElements[0]->getId(), $document->getId());
+
+        $document = $this->mandango->getRepository('Model\Element')->createQuery(array('_id' => $textareaFormElements[0]->getId()))->one();
+        $this->assertInstanceof('Model\TextareaFormElement', $document);
+        $this->assertEquals($textareaFormElements[0]->getId(), $document->getId());
+
         $document = $this->mandango->getRepository('Model\FormElement')->createQuery(array('_id' => $radioFormElements[0]->getId()))->one();
         $this->assertInstanceof('Model\RadioFormElement', $document);
         $this->assertEquals($radioFormElements[0]->getId(), $document->getId());
+        $this->assertEquals($radioFormElements[0]->getOptions(), $document->getOptions());
 
         // with and without identity map
         $ids = array(

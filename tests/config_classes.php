@@ -406,4 +406,48 @@ return array(
     'Model\IdGeneratorSingleInheritanceChild' => array(
         'inheritance' => array('class' => 'Model\IdGeneratorSingleInheritanceParent', 'value' => 'child'),
     ),
+
+    'Model\CyclicSingleInheritance' => array(
+        'inheritable' => array('type' => 'single'),
+
+        // hack for references in inherited classes
+        '_has_references' => true,
+
+        'fields' => array(
+            'name' => 'string'
+        )
+    ),
+
+    'Model\CyclicSingleInheritanceVariant1' => array(
+        'inheritance' => array('class' => 'Model\CyclicSingleInheritance', 'value' => 'variant1'),
+        'fields' => array(
+            'variant1' => 'string'
+        ),
+        'referencesOne' => array(
+            'parent' => array('class' => 'Model\CyclicSingleInheritance'),
+        ),
+
+        'inheritable' => array('type' => 'single'),
+        '_has_references' => true,
+    ),
+
+    'Model\CyclicSingleInheritanceVariant2' => array(
+        'inheritance' => array('class' => 'Model\CyclicSingleInheritance', 'value' => 'variant2'),
+        'fields' => array(
+            'variant2' => 'string'
+        ),
+        'referencesOne' => array(
+            'parent' => array('class' => 'Model\CyclicSingleInheritance'),
+        )
+    ),
+
+    'Model\CyclicSingleInheritanceVariant3' => array(
+        'inheritance' => array('class' => 'Model\CyclicSingleInheritanceVariant1', 'value' => 'variant3'),
+        'fields' => array(
+            'variant3' => 'string'
+        ),
+        'referencesOne' => array(
+            'parent' => array('class' => 'Model\CyclicSingleInheritance'),
+        )
+    ),
 );

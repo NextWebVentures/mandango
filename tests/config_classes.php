@@ -24,6 +24,8 @@ return array(
         'referencesOne' => array(
             'author'      => array('class' => 'Model\Author', 'field' => 'authorId', 'onDelete' => 'cascade'),
             'authorDbref' => array('class' => 'Model\Author', 'field' => 'authorDbrefObj', 'onDelete' => 'cascade', 'dbref' => true),
+            'authorNxIgnore' => array('class' => 'Model\Author', 'nxreference' => 'ignore'),
+            'authorNxIgnoreDBRef' => array('class' => 'Model\Author', 'nxreference' => 'ignore', 'dbref' => true),
             'information' => array('class' => 'Model\ArticleInformation', 'field' => 'informationId', 'onDelete' => 'unset'),
             'like'        => array('polymorphic' => true, 'field' => 'likeRef', 'onDelete' => 'cascade'),
             'likeDbref'   => array('polymorphic' => true, 'field' => 'likeDbrefObj', 'onDelete' => 'cascade', 'dbref' => true),

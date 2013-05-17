@@ -53,9 +53,11 @@
 {% else %}
             $document = $repository->findOneById($reference);
 {% endif %}
+{% if 'exception' == referenceOne.nxreference %}
             if (!$document) {
                 throw new \RuntimeException('The reference "{{ name }}" does not exist.');
             }
+{% endif %}
             $this->data['referencesOne']['{{ name }}'] = $document;
         }
 
@@ -131,9 +133,11 @@
 {% else %}
             $document = $repository->findOneById($ref['id']);
 {% endif %}
+{% if 'exception' == referenceOne.nxreference %}
             if (!$document) {
                 throw new \RuntimeException('The reference "{{ name }}" does not exist.');
             }
+{% endif %}
             $this->data['referencesOne']['{{ name }}'] = $document;
         }
 

@@ -103,7 +103,14 @@ class PolymorphicReferenceGroup extends PolymorphicGroup
             } else {
                 $documentClass = $datum[$discriminatorField];
             }
-            $ids[$documentClass][] = $datum['id'];
+            if (isset($datum['id'])) {
+                $id = $datum['id'];
+            } elseif (isset($datum['$id'])) {
+                $id = $datum['$id'];
+            } else {
+                throw new \Exception('Can\'t find an ID key');
+            }
+            $ids[$documentClass][] = $id;
         }
 
         $documents = array();

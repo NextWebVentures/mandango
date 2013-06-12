@@ -3,11 +3,13 @@
 {% for name, field in config_class.fields %}
 
 {% set reference = null %}
+{% set referenceMany = false %}
 {% if field.referenceField is defined and field.referenceField == true and field.referenceFieldName is defined %}
     {% if config_class.referencesOne[field.referenceFieldName] is defined %}
         {% set reference = config_class.referencesOne[field.referenceFieldName] %}
     {% elseif config_class.referencesMany[field.referenceFieldName] is defined %}
-        {% set reference = config_class.referencesMany[field.referenceFieldName] %} {# TODO does it work? #}
+        {% set reference = config_class.referencesMany[field.referenceFieldName] %}
+        {% set referenceMany = true %}
     {% endif %}
 {% endif %}
 
@@ -20,9 +22,13 @@
      *
      * @return \{{ class }} The document (fluent interface).
      */
-    public function set{{ name|ucfirst }}($value)
+    public function set{{ name|ucfirst }}({% if referenceMany %}array $values = []{% else %}$value{% endif %})
     {
 {% if reference is defined and reference.dbref is defined and reference.dbref == true %}
+
+{% if referenceMany %}
+        foreach ($values as $value) {
+{% endif %}
 
 {# normal: not polymorphic #}
 {% if reference.polymorphic is not defined or reference.polymorphic == false %}
@@ -76,6 +82,14 @@
         }
 
 {% endif %}
+{% endif %}
+
+{% if referenceMany %}
+        }
+
+        // for easyness and compability
+        $value = $values;
+        unset($values);
 {% endif %}
 
         if (!isset($this->data['fields']['{{ name }}'])) {

@@ -1,7 +1,7 @@
 <?php
 
 {% for name, referenceMany in config_class.referencesMany %}
-{# normal, no polymorphic #}
+{# normal: not polymorphic #}
 {% if referenceMany.class is defined %}
     /**
      * Returns the "{{ name }}" reference.

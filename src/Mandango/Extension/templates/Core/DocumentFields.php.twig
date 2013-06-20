@@ -22,12 +22,12 @@
      *
      * @return \{{ class }} The document (fluent interface).
      */
-    public function set{{ name|ucfirst }}({% if referenceMany %}array $values = []{% else %}$value{% endif %})
+    public function set{{ name|ucfirst }}({% if referenceMany %}$values = []{% else %}$value{% endif %})
     {
 {% if reference is defined and reference.dbref is defined and reference.dbref == true %}
 
 {% if referenceMany %}
-        foreach ($values as $value) {
+        foreach ((array) $values as $value) {
 {% endif %}
 
 {# normal: not polymorphic #}

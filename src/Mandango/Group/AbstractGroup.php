@@ -48,7 +48,7 @@ abstract class AbstractGroup implements \Countable, \IteratorAggregate
 
         $add =& Archive::getByRef($this, 'add', array());
         $remove =& Archive::getByRef($this, 'remove', array());
-        $saved = $this->getSaved();
+        $saved = $this->isSavedInitialized() ? $this->getSaved() : [];
         foreach ($documents as $document) {
             // add it, so don't remove (obvious?)
             while (false !== $key = array_search($document, $remove)) {

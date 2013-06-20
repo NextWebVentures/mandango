@@ -47,9 +47,21 @@ abstract class AbstractGroup implements \Countable, \IteratorAggregate
         }
 
         $add =& Archive::getByRef($this, 'add', array());
+        $remove =& Archive::getByRef($this, 'remove', array());
+        $saved = $this->getSaved();
         foreach ($documents as $document) {
+            // add it, so don't remove (obvious?)
+            while (false !== $key = array_search($document, $remove)) {
+                unset($remove[$key]);
+            }
+            // if it has been added before...
+            if (in_array($document, $saved)) {
+                // ... just ignore
+                continue;
+            }
             $add[] = $document;
         }
+        $documents = array_filter(array_unique($documents, SORT_REGULAR));
     }
 
     /**
@@ -86,9 +98,15 @@ abstract class AbstractGroup implements \Countable, \IteratorAggregate
         }
 
         $remove =& Archive::getByRef($this, 'remove', array());
+        $add =& Archive::getByRef($this, 'add', array());
         foreach ($documents as $document) {
+            // remove it if it has been added (?!)
+            while (false !== $key = array_search($document, $add)) {
+                unset($add[$key]);
+            }
             $remove[] = $document;
         }
+        $documents = array_filter(array_unique($documents, SORT_REGULAR));
     }
 
     /**

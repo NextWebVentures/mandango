@@ -46,6 +46,7 @@ abstract class AbstractGroup implements \Countable, \IteratorAggregate
             $documents = array($documents);
         }
 
+        $this->initializeSaved();
         $add =& Archive::getByRef($this, 'add', array());
         $remove =& Archive::getByRef($this, 'remove', array());
         $saved = $this->isSavedInitialized() ? $this->getSaved() : array();

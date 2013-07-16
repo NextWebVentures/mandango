@@ -115,6 +115,7 @@ class PolymorphicReferenceGroup extends PolymorphicGroup
 
         $documents = array();
         foreach ($ids as $documentClass => $documentClassIds) {
+            $documentClassIds = array_unique($documentClassIds, SORT_REGULAR);
             foreach ((array) $mandango->getRepository($documentClass)->findById($documentClassIds) as $document) {
                 $documents[] = $document;
             }

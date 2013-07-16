@@ -49,19 +49,22 @@ abstract class AbstractGroup implements \Countable, \IteratorAggregate
         $add =& Archive::getByRef($this, 'add', array());
         $remove =& Archive::getByRef($this, 'remove', array());
         $saved = $this->isSavedInitialized() ? $this->getSaved() : array();
+
+        /**
+         * @var \Mandango\Document\Document $document
+         */
         foreach ($documents as $document) {
             // add it, so don't remove (obvious?)
             while (false !== $key = array_search($document, $remove)) {
                 unset($remove[$key]);
             }
             // if it has been added before...
-            if (in_array($document, $saved)) {
+            if (in_array($document, $saved) && !$document->isNew()) {
                 // ... just ignore
                 continue;
             }
             $add[] = $document;
         }
-        $add = array_filter(array_unique($add, SORT_REGULAR));
     }
 
     /**
@@ -99,14 +102,22 @@ abstract class AbstractGroup implements \Countable, \IteratorAggregate
 
         $remove =& Archive::getByRef($this, 'remove', array());
         $add =& Archive::getByRef($this, 'add', array());
+
+        /**
+         * @var \Mandango\Document\Document $document
+         */
         foreach ($documents as $document) {
             // remove it if it has been added (?!)
             while (false !== $key = array_search($document, $add)) {
                 unset($add[$key]);
             }
+            // if it has been removed before...
+            if (in_array($document, $remove) && !$document->isNew()) {
+                // ... just ignore
+                continue;
+            }
             $remove[] = $document;
         }
-        $remove = array_filter(array_unique($remove, SORT_REGULAR));
     }
 
     /**
